@@ -12,29 +12,26 @@ function formatEpisodeCode(episode) {
 }
 
 function makePageForEpisodes(episodeList) {
-  const rootElem = document.getElementById("root");
   const attribution = document.createElement("p");
   attribution.innerHTML = `<a href="https://tvmaze.com/">The data has (originally) come from TVMaze.com</a>`;
+  const main = document.querySelector("main");
 
   episodeList.forEach((episode) => {
-    const episodeDiv = document.createElement("div");
-    const title = document.createElement("h3");
-    const image = document.createElement("img");
-    const summaryParagraph = document.createElement("p");
+    const filmCardTemplate = document
+      .getElementById("film-card-template")
+      .content.cloneNode(true);
 
-    title.textContent = `${episode.name} - ${formatEpisodeCode(episode)}`;
+    filmCardTemplate.querySelector("h3").textContent = `${
+      episode.name
+    } - ${formatEpisodeCode(episode)}`;
 
-    image.src = episode.image.medium;
-    image.alt = "Image Cover";
+    filmCardTemplate.querySelector("img").src = episode.image.medium;
+    filmCardTemplate.querySelector("img").alt = "hero-image";
+    filmCardTemplate.querySelector("p").innerHTML = episode.summary;
 
-    summaryParagraph.innerHTML = episode.summary;
-
-    rootElem.appendChild(episodeDiv);
-    episodeDiv.appendChild(title);
-    episodeDiv.appendChild(image);
-    episodeDiv.appendChild(summaryParagraph);
+    main.append(filmCardTemplate);
   });
-  rootElem.appendChild(attribution);
+  main.append(attribution);
 }
 
 window.onload = setup;
