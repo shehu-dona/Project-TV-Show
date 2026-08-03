@@ -1,20 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TV Show Project | Liridona Shehu (shehu-dona)</title>
-    <link href="style.css" rel="stylesheet" />
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-  </head>
 
-  <body>
-    <div id="root"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TV Show Project | Liridona Shehu (shehu-dona)</title>
+  <link href="style.css" rel="stylesheet" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+</head>
 
-    <!-- Loads a provided function called getAllEpisodes() which returns all episodes -->
-    <script src="episodes.js"></script>
+<body>
+  <main id="root">
+    <form class="search-area">
+      <label for="film-search">Search films:</label>
+      <input type="search" id="film-search">
+      <p class="filter-display"></p>
 
-    <!-- Loads YOUR javascript code -->
-    <script src="script.js"></script>
-  </body>
+    </form>
+    <div id="film-grid" class="film-grid">
+      <template id="film-card">
+        <section class="card">
+          <header>
+            <h2 class="title"></h2>
+          </header>
+          <img src="" alt="">
+          <p class="summary">
+
+          </p>
+        </section>
+      </template>
+    </div>
+  </main>
+  <h3 class="source">Film data source: <a href="https://www.tvmaze.com/" target="_blank">tvmaze.com</a></h3>
+  <!-- Loads a provided function called getAllEpisodes() which returns all episodes -->
+  <script src="episodes.js"></script>
+
+  <!-- Loads YOUR javascript code -->
+  <script src="script.js"></script>
+</body>
+
 </html>
