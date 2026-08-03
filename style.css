@@ -1,3 +1,22 @@
-#root {
-  color: red;
+main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+.card {
+  width: 375px;
+  border: 1px solid black;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+.title {
+  border: 1px solid grey;
+  padding: 20px;
+}
+
+img {
+  object-fit: cover;
+  width: 350px;
+  height: 200px;
 }
