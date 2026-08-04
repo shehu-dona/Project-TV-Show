@@ -1,15 +1,13 @@
 //You can edit ALL of the code here
-/**
- 1. Fetch all episodes
- 2. Filter episodes - show numbers filtered
- 3. Add css
- 4. Clone repository
- 5. Show source of data
 
- */
-
-const filmGrid = document.getElementById("film-grid");
+const filmGrid = document.getElementById('film-grid');
+const filterDisplay = document.querySelector('.filter-display');
+const searchInput = document.getElementById('film-search');
 const allEpisodes = getAllEpisodes();
+const state = {
+  query: '',
+  films: allEpisodes,
+};
 
 const formatEpisodeCode = (prefix, value) => {
   return `${prefix}${String(value).padStart(2, 0)}`;
@@ -18,19 +16,19 @@ const formatEpisodeCode = (prefix, value) => {
 const createFilmCard = (film) => {
   console.log(film);
   const filmCardTemplate = document
-    .getElementById("film-card")
+    .getElementById('film-card')
     .content.cloneNode(true);
-  const filmTitle = filmCardTemplate.querySelector("h2");
+  const filmTitle = filmCardTemplate.querySelector('h2');
   filmTitle.innerText = `${name} - ${formatEpisodeCode(
-    "S",
+    'S',
     season
-  )}${formatEpisodeCode("E", number)}`;
+  )}${formatEpisodeCode('E', number)}`;
 
-  const filmImage = filmCardTemplate.querySelector("img");
+  const filmImage = filmCardTemplate.querySelector('img');
   filmImage.src = medium;
-  filmImage.alt = "image from film";
+  filmImage.alt = 'image from film';
 
-  const filmSummary = filmCardTemplate.querySelector(".summary");
+  const filmSummary = filmCardTemplate.querySelector('.summary');
   filmSummary.innerHTML = summary;
 
   return filmCardTemplate;
@@ -48,31 +46,63 @@ function setup() {
 //   return formattedEpisodeCode;
 // }
 
-function makePageForEpisodes(episodeList) {
-  const attribution = document.createElement("p");
+function makePageForEpisodes() {
+  const main = document.querySelector('main');
+  main.replaceChildren(); // clear all cards in main
+  const attribution = document.createElement('p');
   attribution.innerHTML = `<a href="https://tvmaze.com/">The data has (originally) come from TVMaze.com</a>`;
-  const main = document.querySelector("main");
+
+  const { query, films } = state;
+  const filmSearch = films.filter((film) => {
+    return (
+      film.name.toLowerCase().includes(query) ||
+      film.summary.toLowerCase().includes(query)
+    );
+  });
+
+  let episodeList;
+
+  if (state.query === '') {
+    episodeList = films;
+    filterDisplay.innerText = '';
+  } else {
+    episodeList = filmSearch;
+    filterDisplay.innerText = `Displaying ${filmSearch.length}/${films.length}`;
+  }
 
   episodeList.forEach((episode) => {
-    console.log("Episode");
     const filmCardTemplate = document
-      .getElementById("film-card-template")
+      .getElementById('film-card-template')
       .content.cloneNode(true);
 
-    filmCardTemplate.querySelector("h3").textContent = `${
+    filmCardTemplate.querySelector('h3').textContent = `${
       episode.name
-    } - ${formatEpisodeCode("S", episode.season)}${formatEpisodeCode(
-      "E",
+    } - ${formatEpisodeCode('S', episode.season)}${formatEpisodeCode(
+      'E',
       episode.number
     )}`;
 
-    filmCardTemplate.querySelector("img").src = episode.image.medium;
-    filmCardTemplate.querySelector("img").alt = "hero-image";
-    filmCardTemplate.querySelector("p").innerHTML = episode.summary;
+    filmCardTemplate.querySelector('img').src = episode.image.medium;
+    filmCardTemplate.querySelector('img').alt = 'hero-image';
+    filmCardTemplate.querySelector('p').innerHTML = episode.summary;
 
     main.append(filmCardTemplate);
   });
   main.append(attribution);
+
+  let debounceTimer;
+
+  searchInput.addEventListener('keyup', (e) => {
+    clearTimeout(debounceTimer);
+
+    debounceTimer = setTimeout(() => {
+      state.query = e.target.value.toLowerCase();
+      makePageForEpisodes();
+    }, 180);
+    state.query = e.target.value.toLowerCase();
+
+    makePageForEpisodes();
+  });
 }
 
 window.onload = setup;
