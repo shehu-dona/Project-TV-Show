@@ -8,47 +8,45 @@
 
  */
 
-const filmGrid = document.getElementById('film-grid');
+const filmGrid = document.getElementById("film-grid");
 const allEpisodes = getAllEpisodes();
 
 const formatEpisodeCode = (prefix, value) => {
   return `${prefix}${String(value).padStart(2, 0)}`;
 };
 
-const createFilmCard = ({
-  name,
-  number,
-  season,
-  summary,
-  image: { medium },
-}) => {
+const createFilmCard = (film) => {
+  console.log(film);
   const filmCardTemplate = document
-    .getElementById('film-card')
+    .getElementById("film-card")
     .content.cloneNode(true);
-  const filmTitle = filmCardTemplate.querySelector('h2');
-  filmTitle.innerText = `${name} - ${formatEpisodeCode('S', season)}${formatEpisodeCode('E', number)}`;
+  const filmTitle = filmCardTemplate.querySelector("h2");
+  filmTitle.innerText = `${name} - ${formatEpisodeCode(
+    "S",
+    season
+  )}${formatEpisodeCode("E", number)}`;
 
-  const filmImage = filmCardTemplate.querySelector('img');
+  const filmImage = filmCardTemplate.querySelector("img");
   filmImage.src = medium;
-  filmImage.alt = 'image from film';
+  filmImage.alt = "image from film";
 
-  const filmSummary = filmCardTemplate.querySelector('.summary');
+  const filmSummary = filmCardTemplate.querySelector(".summary");
   filmSummary.innerHTML = summary;
 
   return filmCardTemplate;
 };
 
 function setup() {
-  // makePageForEpisodes(allEpisodes);
-  render();
+  makePageForEpisodes(allEpisodes);
+  // render();
 }
 
-function formatEpisodeCode(episode) {
-  const season = episode.season.toString().padStart(2, "0");
-  const number = episode.number.toString().padStart(2, "0");
-  const formattedEpisodeCode = `S${season}E${number}`;
-  return formattedEpisodeCode;
-}
+// function formatEpisodeCode(episode) {
+//   const season = episode.season.toString().padStart(2, "0");
+//   const number = episode.number.toString().padStart(2, "0");
+//   const formattedEpisodeCode = `S${season}E${number}`;
+//   return formattedEpisodeCode;
+// }
 
 function makePageForEpisodes(episodeList) {
   const attribution = document.createElement("p");
@@ -56,13 +54,17 @@ function makePageForEpisodes(episodeList) {
   const main = document.querySelector("main");
 
   episodeList.forEach((episode) => {
+    console.log("Episode");
     const filmCardTemplate = document
       .getElementById("film-card-template")
       .content.cloneNode(true);
 
     filmCardTemplate.querySelector("h3").textContent = `${
       episode.name
-    } - ${formatEpisodeCode(episode)}`;
+    } - ${formatEpisodeCode("S", episode.season)}${formatEpisodeCode(
+      "E",
+      episode.number
+    )}`;
 
     filmCardTemplate.querySelector("img").src = episode.image.medium;
     filmCardTemplate.querySelector("img").alt = "hero-image";
