@@ -4,54 +4,51 @@ const filmGrid = document.getElementById('film-grid');
 const filterDisplay = document.querySelector('.filter-display');
 const searchInput = document.getElementById('film-search');
 const allEpisodes = getAllEpisodes();
+
+// track state of changes - eg input searches
 const state = {
   query: '',
   films: allEpisodes,
 };
 
-const formatEpisodeCode = (prefix, value) => {
-  return `${prefix}${String(value).padStart(2, 0)}`;
-};
+function setup() {
+  renderFilms();
+}
+
+// formats episode and season numbers to show 2 digits
+const formatEpisodeCode = (prefix, value) =>
+  `${prefix}${String(value).padStart(2, '0')}`;
 
 const createFilmCard = (film) => {
-  console.log(film);
-  const filmCardTemplate = document
-    .getElementById('film-card')
+  const {
+    name,
+    season,
+    number,
+    image: { medium },
+    summary,
+  } = film;
+  const filmCard = document
+    .getElementById('film-card-template')
     .content.cloneNode(true);
-  const filmTitle = filmCardTemplate.querySelector('h2');
-  filmTitle.innerText = `${name} - ${formatEpisodeCode(
-    'S',
-    season
-  )}${formatEpisodeCode('E', number)}`;
+  const title = filmCard.querySelector('h3');
+  title.innerText = `${name} - ${formatEpisodeCode('S', season)}${formatEpisodeCode('E', number)}`;
 
-  const filmImage = filmCardTemplate.querySelector('img');
+  const filmImage = filmCard.querySelector('img');
   filmImage.src = medium;
   filmImage.alt = 'image from film';
 
-  const filmSummary = filmCardTemplate.querySelector('.summary');
+  const filmSummary = filmCard.querySelector('p');
   filmSummary.innerHTML = summary;
 
-  return filmCardTemplate;
+  return filmCard;
 };
 
-function setup() {
-  makePageForEpisodes(allEpisodes);
-  // render();
-}
+const renderFilms = () => {
+  const rootElem = document.getElementById('film-grid');
+  // clear film grid before repopulating it
+  rootElem.innerHTML = '';
 
-// function formatEpisodeCode(episode) {
-//   const season = episode.season.toString().padStart(2, "0");
-//   const number = episode.number.toString().padStart(2, "0");
-//   const formattedEpisodeCode = `S${season}E${number}`;
-//   return formattedEpisodeCode;
-// }
-
-function makePageForEpisodes() {
-  const main = document.querySelector('main');
-  main.replaceChildren(); // clear all cards in main
-  const attribution = document.createElement('p');
-  attribution.innerHTML = `<a href="https://tvmaze.com/">The data has (originally) come from TVMaze.com</a>`;
-
+  // input query searches
   const { query, films } = state;
   const filmSearch = films.filter((film) => {
     return (
@@ -62,6 +59,7 @@ function makePageForEpisodes() {
 
   let episodeList;
 
+  // check if film list is filtered or not
   if (state.query === '') {
     episodeList = films;
     filterDisplay.innerText = '';
@@ -69,40 +67,73 @@ function makePageForEpisodes() {
     episodeList = filmSearch;
     filterDisplay.innerText = `Displaying ${filmSearch.length}/${films.length}`;
   }
+  // create film cards and append to film-grid
+  const filmCards = episodeList.map(createFilmCard);
+  rootElem.append(...filmCards);
+};
 
-  episodeList.forEach((episode) => {
-    const filmCardTemplate = document
-      .getElementById('film-card-template')
-      .content.cloneNode(true);
+searchInput.addEventListener('input', (e) => {
+  state.query = e.target.value.toLowerCase();
+  renderFilms();
+});
 
-    filmCardTemplate.querySelector('h3').textContent = `${
-      episode.name
-    } - ${formatEpisodeCode('S', episode.season)}${formatEpisodeCode(
-      'E',
-      episode.number
-    )}`;
+// function makePageForEpisodes() {
+//   const main = document.querySelector('main');
+//   main.replaceChildren(); // clear all cards in main
+//   const attribution = document.createElement('p');
+//   attribution.innerHTML = `<a href="https://tvmaze.com/">The data has (originally) come from TVMaze.com</a>`;
 
-    filmCardTemplate.querySelector('img').src = episode.image.medium;
-    filmCardTemplate.querySelector('img').alt = 'hero-image';
-    filmCardTemplate.querySelector('p').innerHTML = episode.summary;
+//   const { query, films } = state;
+//   const filmSearch = films.filter((film) => {
+//     return (
+//       film.name.toLowerCase().includes(query) ||
+//       film.summary.toLowerCase().includes(query)
+//     );
+//   });
 
-    main.append(filmCardTemplate);
-  });
-  main.append(attribution);
+//   let episodeList;
 
-  let debounceTimer;
+//   if (state.query === '') {
+//     episodeList = films;
+//     filterDisplay.innerText = '';
+//   } else {
+//     episodeList = filmSearch;
+//     filterDisplay.innerText = `Displaying ${filmSearch.length}/${films.length}`;
+//   }
 
-  searchInput.addEventListener('keyup', (e) => {
-    clearTimeout(debounceTimer);
+//   episodeList.forEach((episode) => {
+//     const filmCardTemplate = document
+//       .getElementById('film-card-template')
+//       .content.cloneNode(true);
 
-    debounceTimer = setTimeout(() => {
-      state.query = e.target.value.toLowerCase();
-      makePageForEpisodes();
-    }, 180);
-    state.query = e.target.value.toLowerCase();
+//     filmCardTemplate.querySelector('h3').textContent = `${
+//       episode.name
+//     } - ${formatEpisodeCode('S', episode.season)}${formatEpisodeCode(
+//       'E',
+//       episode.number
+//     )}`;
 
-    makePageForEpisodes();
-  });
-}
+//     filmCardTemplate.querySelector('img').src = episode.image.medium;
+//     filmCardTemplate.querySelector('img').alt = 'hero-image';
+//     filmCardTemplate.querySelector('p').innerHTML = episode.summary;
+
+//     main.append(filmCardTemplate);
+//   });
+//   main.append(attribution);
+
+//   let debounceTimer;
+
+//   searchInput.addEventListener('keyup', (e) => {
+//     clearTimeout(debounceTimer);
+
+//     debounceTimer = setTimeout(() => {
+//       state.query = e.target.value.toLowerCase();
+//       makePageForEpisodes();
+//     }, 180);
+//     state.query = e.target.value.toLowerCase();
+
+//     makePageForEpisodes();
+//   });
+// }
 
 window.onload = setup;
