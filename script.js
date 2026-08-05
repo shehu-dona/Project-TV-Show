@@ -1,9 +1,12 @@
 //You can edit ALL of the code here
 
 const filmGrid = document.getElementById('film-grid');
+const singleFilmContainer = document.querySelector('.single-film-grid');
 const filterDisplay = document.querySelector('.filter-display');
+const searchArea = document.querySelector('.search-area');
 const filmSelect = document.getElementById('film-select');
 const searchInput = document.getElementById('film-search');
+const exitButton = document.querySelector('.exit');
 const allEpisodes = getAllEpisodes();
 
 // track state of changes - eg input searches
@@ -91,16 +94,19 @@ const populateFilmSelect = () => {
 };
 // display single film when select option is chosen
 const displaySelectedFilm = () => {
-  const singleFilmGrid = document.querySelector('.show-single-film');
+  const singleFilmContent = document.querySelector('.show-single-film');
   // get film card
   const chosenFilm = createFilmCard(state.selectedFilm);
   // clear single film grid before adding a film
-  singleFilmGrid.innerHTML = '';
-  singleFilmGrid.append(chosenFilm);
-  // show it on single-film - hide film grid and search area
-  // on exit button click
-  // clear single film and hide single film
-  // show search area and film grid
+  singleFilmContent.innerHTML = '';
+  // reset state.selectedFilm to empty object
+  state.selectedFilm = {};
+  singleFilmContent.append(chosenFilm);
+  // show the single selected film
+  singleFilmContainer.classList.remove('hidden');
+  // hide search area and film grid
+  searchArea.classList.add('hidden');
+  filmGrid.classList.add('hidden');
 };
 
 // EVENT LISTENERS
@@ -119,6 +125,15 @@ filmSelect.addEventListener('change', (e) => {
   // reset select
   e.target.value = '';
   displaySelectedFilm();
+});
+
+// event listener to exit single film grid
+exitButton.addEventListener('click', (e) => {
+  // hide the single film grid
+  singleFilmContainer.classList.add('hidden');
+  // show search area and film grid
+  searchArea.classList.remove('hidden');
+  filmGrid.classList.remove('hidden');
 });
 
 window.onload = setup;
