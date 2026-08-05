@@ -2,6 +2,7 @@
 
 const filmGrid = document.getElementById('film-grid');
 const filterDisplay = document.querySelector('.filter-display');
+const filmSelect = document.getElementById('film-select');
 const searchInput = document.getElementById('film-search');
 const allEpisodes = getAllEpisodes();
 
@@ -9,10 +10,12 @@ const allEpisodes = getAllEpisodes();
 const state = {
   query: '',
   films: allEpisodes,
+  selectedFilm: {},
 };
 
 function setup() {
   renderFilms();
+  populateFilmSelect();
 }
 
 // formats episode and season numbers to show 2 digits
@@ -72,9 +75,50 @@ const renderFilms = () => {
   rootElem.append(...filmCards);
 };
 
+// populate each option for film select
+const populateOption = (film) => {
+  const option = document.createElement('option');
+  const { id, season, number, name } = film;
+  const seasonEpisodeDetails = `${formatEpisodeCode('S', season)}${formatEpisodeCode('E', number)}`;
+  option.value = String(id);
+  option.textContent = `${seasonEpisodeDetails} - ${name}`;
+  return option;
+};
+// populate film select
+const populateFilmSelect = () => {
+  const populateOptions = allEpisodes.map(populateOption);
+  filmSelect.append(...populateOptions);
+};
+// display single film when select option is chosen
+const displaySelectedFilm = () => {
+  const singleFilmGrid = document.querySelector('.show-single-film');
+  // get film card
+  const chosenFilm = createFilmCard(state.selectedFilm);
+  // clear single film grid before adding a film
+  singleFilmGrid.innerHTML = '';
+  singleFilmGrid.append(chosenFilm);
+  // show it on single-film - hide film grid and search area
+  // on exit button click
+  // clear single film and hide single film
+  // show search area and film grid
+};
+
+// EVENT LISTENERS
+//event listener for search input
 searchInput.addEventListener('input', (e) => {
   state.query = e.target.value.toLowerCase();
   renderFilms();
+});
+
+//event listener for select
+filmSelect.addEventListener('change', (e) => {
+  if (!e.target.value) return;
+  state.selectedFilm = allEpisodes.filter(
+    (film) => film.id === Number(e.target.value.trim())
+  )[0];
+  // reset select
+  e.target.value = '';
+  displaySelectedFilm();
 });
 
 window.onload = setup;
