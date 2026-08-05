@@ -11,6 +11,10 @@
 
 <body>
   <form class="search-area">
+    <label for="film-select">Choose a film:</label>
+    <select id="film-select">
+      <option value="">Select a film</option>
+    </select>
     <label for="film-search">Search films:</label>
     <input type="search" id="film-search">
     <p class="filter-display"></p>
@@ -24,6 +28,10 @@
   </template>
   <main>
     <div class="film-grid" id="film-grid"></div>
+    <div class="single-film-grid hidden">
+      <button class="exit">Return to film listings</button>
+      <div class="show-single-film"></div>
+    </div>
   </main>
   <h3 class="source">
     Film data source:
