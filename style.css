@@ -1,22 +1,80 @@
-main {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
+/* CSS Reset */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
-.card {
-  width: 375px;
-  border: 1px solid black;
-  padding: 5px;
-  display: flex;
-  flex-direction: column;
+
+* {
+  margin: 0;
+  padding: 0;
 }
-.title {
-  border: 1px solid grey;
-  padding: 20px;
+
+html {
+  font-size: 100%;
+  line-height: 1.5;
 }
 
 img {
-  object-fit: cover;
-  width: 350px;
-  height: 200px;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #222;
+}
+
+.source {
+  text-align: center;
+}
+
+#root {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.film-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.card {
+  width: 100%;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+header {
+  margin-bottom: 0.8rem;
+}
+
+.summary {
+  margin-top: 0.8rem;
+}
+
+.search-area {
+  text-align: center;
+  margin: 1.5rem auto;
+  /* margin: 1.5rem 0; */
+}
+
+@media (min-width: 700px) {
+  .film-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1000px) {
+  .film-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }

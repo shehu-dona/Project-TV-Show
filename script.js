@@ -1,78 +1,80 @@
 //You can edit ALL of the code here
-/**
- 1. Fetch all episodes
- 2. Filter episodes - show numbers filtered
- 3. Add css
- 4. Clone repository
- 5. Show source of data
 
- */
-
-const filmGrid = document.getElementById("film-grid");
+const filmGrid = document.getElementById('film-grid');
+const filterDisplay = document.querySelector('.filter-display');
+const searchInput = document.getElementById('film-search');
 const allEpisodes = getAllEpisodes();
 
-const formatEpisodeCode = (prefix, value) => {
-  return `${prefix}${String(value).padStart(2, 0)}`;
-};
-
-const createFilmCard = (film) => {
-  console.log(film);
-  const filmCardTemplate = document
-    .getElementById("film-card")
-    .content.cloneNode(true);
-  const filmTitle = filmCardTemplate.querySelector("h2");
-  filmTitle.innerText = `${name} - ${formatEpisodeCode(
-    "S",
-    season
-  )}${formatEpisodeCode("E", number)}`;
-
-  const filmImage = filmCardTemplate.querySelector("img");
-  filmImage.src = medium;
-  filmImage.alt = "image from film";
-
-  const filmSummary = filmCardTemplate.querySelector(".summary");
-  filmSummary.innerHTML = summary;
-
-  return filmCardTemplate;
+// track state of changes - eg input searches
+const state = {
+  query: '',
+  films: allEpisodes,
 };
 
 function setup() {
-  makePageForEpisodes(allEpisodes);
-  // render();
+  renderFilms();
 }
 
-// function formatEpisodeCode(episode) {
-//   const season = episode.season.toString().padStart(2, "0");
-//   const number = episode.number.toString().padStart(2, "0");
-//   const formattedEpisodeCode = `S${season}E${number}`;
-//   return formattedEpisodeCode;
-// }
+// formats episode and season numbers to show 2 digits
+const formatEpisodeCode = (prefix, value) =>
+  `${prefix}${String(value).padStart(2, '0')}`;
 
-function makePageForEpisodes(episodeList) {
-  const attribution = document.createElement("p");
-  attribution.innerHTML = `<a href="https://tvmaze.com/">The data has (originally) come from TVMaze.com</a>`;
-  const main = document.querySelector("main");
+const createFilmCard = (film) => {
+  const {
+    name,
+    season,
+    number,
+    image: { medium },
+    summary,
+  } = film;
+  const filmCard = document
+    .getElementById('film-card-template')
+    .content.cloneNode(true);
+  const title = filmCard.querySelector('h3');
+  title.innerText = `${name} - ${formatEpisodeCode('S', season)}${formatEpisodeCode('E', number)}`;
 
-  episodeList.forEach((episode) => {
-    console.log("Episode");
-    const filmCardTemplate = document
-      .getElementById("film-card-template")
-      .content.cloneNode(true);
+  const filmImage = filmCard.querySelector('img');
+  filmImage.src = medium;
+  filmImage.alt = 'image from film';
 
-    filmCardTemplate.querySelector("h3").textContent = `${
-      episode.name
-    } - ${formatEpisodeCode("S", episode.season)}${formatEpisodeCode(
-      "E",
-      episode.number
-    )}`;
+  const filmSummary = filmCard.querySelector('p');
+  filmSummary.innerHTML = summary;
 
-    filmCardTemplate.querySelector("img").src = episode.image.medium;
-    filmCardTemplate.querySelector("img").alt = "hero-image";
-    filmCardTemplate.querySelector("p").innerHTML = episode.summary;
+  return filmCard;
+};
 
-    main.append(filmCardTemplate);
+const renderFilms = () => {
+  const rootElem = document.getElementById('film-grid');
+  // clear film grid before repopulating it
+  rootElem.innerHTML = '';
+
+  // input query searches
+  const { query, films } = state;
+  const filmSearch = films.filter((film) => {
+    return (
+      film.name.toLowerCase().includes(query) ||
+      film.summary.toLowerCase().includes(query)
+    );
   });
-  main.append(attribution);
-}
+
+  let episodeList;
+
+  // check if film list is filtered or not
+  if (state.query === '') {
+    episodeList = films;
+    filterDisplay.innerText = '';
+  } else {
+    episodeList = filmSearch;
+    filterDisplay.innerText = `Displaying ${filmSearch.length}/${films.length}`;
+  }
+  // create film cards and append to film-grid
+  const filmCards = episodeList.map(createFilmCard);
+  rootElem.append(...filmCards);
+};
+
+searchInput.addEventListener('input', (e) => {
+  state.query = e.target.value.toLowerCase();
+  renderFilms();
+});
 
 window.onload = setup;
