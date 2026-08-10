@@ -1,167 +1,92 @@
 // You can edit ALL of the code here
 
-const filmGrid = document.getElementById('film-grid');
-const singleFilmContainer = document.querySelector('.single-film-grid');
-const filterDisplay = document.querySelector('.filter-display');
-const searchArea = document.querySelector('.search-area');
-const filmSelect = document.getElementById('film-select');
-const showSelect = document.getElementById('show-select');
-const searchInput = document.getElementById('film-search');
-const exitButton = document.querySelector('.exit');
-const API_SHOW_URL = 'https://api.tvmaze.com/shows';
-
-let showsCache = null;
-let showsPromise = null;
-const filmsCache = new Map();
-const filmsPromises = new Map();
+async function fetchEpisodes() {
+  try {
+    const response = await fetch("https://api.tvmaze.com/shows/82/episodes");
+    if (!response.ok) {
+      throw new Error("Failed to load episodes");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+let allEpisodes = [];
+const filmGrid = document.getElementById("film-grid");
+const singleFilmContainer = document.querySelector(".single-film-grid");
+const filterDisplay = document.querySelector(".filter-display");
+const searchArea = document.querySelector(".search-area");
+const filmSelect = document.getElementById("film-select");
+const searchInput = document.getElementById("film-search");
+const exitButton = document.querySelector(".exit");
 
 const state = {
-  query: '',
-  films: [],
-  shows: [],
-  episodeId: 124,
+  query: "",
+  films: allEpisodes,
   selectedFilm: {},
 };
 
-function showMessage(message, duration = 3000) {
-  const existingMessage = document.querySelector('.app-message');
-  if (existingMessage) existingMessage.remove();
-
-  const messageBox = document.createElement('div');
-  messageBox.className = 'app-message';
-  messageBox.textContent = message;
-  document.body.appendChild(messageBox);
-
-  setTimeout(() => {
-    messageBox.remove();
-  }, duration);
-}
-
-function clearMessage() {
-  document.querySelector('.app-message')?.remove();
-}
-
-async function fetchJson(url) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  return response.json();
-}
-
-async function fetchShows() {
-  if (showsCache) return showsCache;
-
-  if (!showsPromise) {
-    showsPromise = fetchJson(API_SHOW_URL).then((data) => {
-      showsCache = data;
-      return showsCache;
-    });
-  }
-
-  return showsPromise;
-}
-
-async function fetchFilms(showId = state.episodeId) {
-  if (filmsCache.has(showId)) {
-    return filmsCache.get(showId);
-  }
-
-  if (!filmsPromises.has(showId)) {
-    const promise = fetchJson(
-      `https://api.tvmaze.com/shows/${showId}/episodes`
-    ).then((data) => {
-      filmsCache.set(showId, data);
-      return data;
-    });
-
-    filmsPromises.set(showId, promise);
-  }
-
-  return filmsPromises.get(showId);
-}
-
 async function setup() {
-  showMessage('Loading shows...', 1000);
-
+  showLoadingMessage();
   try {
-    const fetchedShows = await fetchShows();
-    state.shows = fetchedShows;
-    renderFilms();
-    populateShowSelect();
-    clearMessage();
-    showMessage('Shows loaded', 1500);
-  } catch (error) {
-    console.error('Failed to load shows:', error);
-    showMessage('Sorry, we could not load the shows right now.');
-  }
-}
-
-async function getFilms(showId = state.episodeId) {
-  showMessage('Loading films...', 1000);
-  try {
-    const fetchedFilms = await fetchFilms(showId);
-    state.films = fetchedFilms;
+    allEpisodes = await fetchEpisodes();
+    state.films = allEpisodes;
+    hideLoadingMessage();
     renderFilms();
     populateFilmSelect();
-    clearMessage();
-    showMessage('Films loaded', 1500);
   } catch (error) {
-    console.error('Failed to load films:', error);
-    showMessage('Sorry, we could not load the films right now.');
+    showErrorMessage();
   }
 }
-
-function populateShowOption(show) {
-  const option = document.createElement('option');
-  const { id, name } = show;
-  option.value = String(id);
-  option.textContent = name;
-  return option;
+function showLoadingMessage() {
+  document.getElementById("loading").innerText = "Loading episodes...";
 }
 
-function populateShowSelect() {
-  const sortedShows = state.shows
-    .map(({ id, name }) => ({ id, name }))
-    .sort((a, b) =>
-      a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-    );
-
-  showSelect.innerHTML = '<option value="">Select a show</option>';
-  showSelect.append(...sortedShows.map(populateShowOption));
-
-  // set select to id of first show
-  if (sortedShows.length > 0) {
-    const firstShowId = sortedShows[0].id;
-    state.episodeId = firstShowId;
-    showSelect.value = state.episodeId;
-    getFilms(state.episodeId);
-  }
+function hideLoadingMessage() {
+  document.getElementById("loading").innerText = "";
 }
 
-function formatEpisodeCode(prefix, value) {
-  return `${prefix}${String(value).padStart(2, '0')}`;
+function showErrorMessage(message) {
+  document.getElementById("loading").innerText =
+    "Could not load episodes. Please try again later.";
 }
 
-function createFilmCard(film) {
+// formats episode and season numbers to show 2 digits
+const formatEpisodeCode = (prefix, value) =>
+  `${prefix}${String(value).padStart(2, "0")}`;
+
+const createFilmCard = (film) => {
+  const {
+    name,
+    season,
+    number,
+    image: { medium },
+    summary,
+  } = film;
   const filmCard = document
-    .getElementById('film-card-template')
+    .getElementById("film-card-template")
     .content.cloneNode(true);
-  const title = filmCard.querySelector('h3');
-  const filmImage = filmCard.querySelector('img');
-  const filmSummary = filmCard.querySelector('p');
+  const title = filmCard.querySelector("h3");
+  title.innerText = `${name} - ${formatEpisodeCode(
+    "S",
+    season
+  )}${formatEpisodeCode("E", number)}`;
 
-  title.innerText = `${film.name} - ${formatEpisodeCode('S', film.season)}${formatEpisodeCode('E', film.number)}`;
-  filmImage.src = film.image?.medium || '';
-  filmImage.alt = film.name || 'image from film';
-  filmSummary.innerHTML = film.summary || '';
+  const filmImage = filmCard.querySelector("img");
+  filmImage.src = medium;
+  filmImage.alt = "image from film";
+
+  const filmSummary = filmCard.querySelector("p");
+  filmSummary.innerHTML = summary;
 
   return filmCard;
 }
 
-function renderFilms() {
-  const rootElem = filmGrid;
-  rootElem.innerHTML = '';
+const renderFilms = () => {
+  const rootElem = document.getElementById("film-grid");
+  // clear film grid before repopulating it
+  rootElem.innerHTML = "";
 
   const { query, films } = state;
   const normalisedQuery = query.trim().toLowerCase();
@@ -174,66 +99,78 @@ function renderFilms() {
 
   const episodeList = normalisedQuery === '' ? films : filteredFilms;
 
-  filterDisplay.innerText = `Displaying ${episodeList.length}/${films.length}`;
+  // check if film list is filtered or not
+  if (state.query === "") {
+    episodeList = films;
+    filterDisplay.innerText = "";
+  } else {
+    episodeList = filmSearch;
+    filterDisplay.innerText = `Displaying ${filmSearch.length}/${films.length}`;
+  }
+  // create film cards and append to film-grid
+  const filmCards = episodeList.map(createFilmCard);
+  rootElem.append(...filmCards);
+};
 
-  rootElem.append(...episodeList.map(createFilmCard));
-}
-
-function populateOption(film) {
-  const option = document.createElement('option');
+// populate each option for film select
+const populateOption = (film) => {
+  const option = document.createElement("option");
   const { id, season, number, name } = film;
-  const seasonEpisodeDetails = `${formatEpisodeCode('S', season)}${formatEpisodeCode('E', number)}`;
+  const seasonEpisodeDetails = `${formatEpisodeCode(
+    "S",
+    season
+  )}${formatEpisodeCode("E", number)}`;
   option.value = String(id);
   option.textContent = `${seasonEpisodeDetails} - ${name}`;
   return option;
-}
-
-function populateFilmSelect() {
-  filmSelect.innerHTML = '<option value="">Select a film</option>';
-  filmSelect.append(...state.films.map(populateOption));
-}
-
-function displaySelectedFilm() {
-  const singleFilmContent = document.querySelector('.show-single-film');
+};
+// populate film select
+const populateFilmSelect = () => {
+  const populateOptions = allEpisodes.map(populateOption);
+  filmSelect.append(...populateOptions);
+};
+// display single film when select option is chosen
+const displaySelectedFilm = () => {
+  const singleFilmContent = document.querySelector(".show-single-film");
+  // get film card
   const chosenFilm = createFilmCard(state.selectedFilm);
-
-  singleFilmContent.innerHTML = '';
+  // clear single film grid before adding a film
+  singleFilmContent.innerHTML = "";
+  // reset state.selectedFilm to empty object
   state.selectedFilm = {};
   singleFilmContent.append(chosenFilm);
+  // show the single selected film
+  singleFilmContainer.classList.remove("hidden");
+  // hide search area and film grid
+  searchArea.classList.add("hidden");
+  filmGrid.classList.add("hidden");
+};
 
-  singleFilmContainer.classList.remove('hidden');
-  searchArea.classList.add('hidden');
-  filmGrid.classList.add('hidden');
-}
-
-// EVENT HANDLERS
-searchInput.addEventListener('input', (event) => {
-  state.query = event.target.value;
+// EVENT LISTENERS
+//event listener for search input
+searchInput.addEventListener("input", (e) => {
+  state.query = e.target.value.toLowerCase();
   renderFilms();
 });
 
-filmSelect.addEventListener('change', (event) => {
-  const selectedValue = event.target.value.trim();
-  if (!selectedValue) return;
-
-  state.selectedFilm =
-    state.films.find((film) => film.id === Number(selectedValue)) || {};
-  event.target.value = '';
+//event listener for select
+filmSelect.addEventListener("change", (e) => {
+  if (!e.target.value) return;
+  state.selectedFilm = allEpisodes.filter(
+    (film) => film.id === Number(e.target.value.trim())
+  )[0];
+  // reset select
+  e.target.value = "";
   displaySelectedFilm();
 });
 
-showSelect.addEventListener('change', async (event) => {
-  const selectedValue = event.target.value.trim();
-  if (!selectedValue) return;
-
-  state.episodeId = Number(selectedValue);
-  await getFilms(state.episodeId);
-});
-
-exitButton.addEventListener('click', () => {
-  singleFilmContainer.classList.add('hidden');
-  searchArea.classList.remove('hidden');
-  filmGrid.classList.remove('hidden');
+// event listener to exit single film grid
+exitButton.addEventListener("click", (e) => {
+  // hide the single film grid
+  singleFilmContainer.classList.add("hidden");
+  // show search area and film grid
+  searchArea.classList.remove("hidden");
+  filmGrid.classList.remove("hidden");
 });
 
 window.onload = setup;
